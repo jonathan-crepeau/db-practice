@@ -1,14 +1,28 @@
-const express = require('express');
-const path = require('path');
-const app = express();
-const PORT = process.env.PORT || 4001;
+const mongoose = require('mongoose');
 
-app.use(express.static(`${__dirname}/public`));
+main().catch(err => console.log(err));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '/views/index.html'));
-});
+async function main() {
+  await mongoose.connect('mongodb+srv://jonathan-crepeau:this-is-my-password@cluster0.baogeq6.mongodb.net/?retryWrites=true&w=majority');
 
-app.listen(PORT, () => {
-  console.log(`Application is listening on port ${PORT}.`);
-});
+  const kittySchema = new mongoose.Schema({
+    name: String,
+    color: String,
+  });
+
+  kittySchema.methods.speak = function speak() {
+    const greeting = this.name
+      ? "Meow name is " + this.name
+      : "I don't have a name";
+    console.log(greeting);
+  };
+
+  const Kitten = mongoose.model('Kitten', kittySchema);
+
+  const luna = new Kitten({ name: 'Luna' });
+  await luna.save();
+
+  const kittens = await Kitten.find();
+  console.log(kittens);
+}
+
